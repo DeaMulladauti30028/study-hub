@@ -5,35 +5,59 @@ namespace App\Http\Controllers;
 use App\Models\StudyGroup;
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StudyGroupController extends Controller
 {
-    public function index(Request $request)
-{
+    public function index(Request $request){
     $onlyUpcoming = $request->boolean('upcoming');
     $search = trim((string) $request->get('q', ''));
+    $sort   = $request->get('sort', 'new'); 
 
-    $groups = StudyGroup::with(['course', 'nextSession'])
+    $builder = StudyGroup::query()
+        ->with(['course', 'nextSession'])
         ->withCount('members')
-        ->when($onlyUpcoming, function ($q) {
-            $q->whereHas('sessions', fn($qq) => $qq->where('starts_at', '>=', now()));
-        })
+        ->when($onlyUpcoming, fn($q) =>
+            $q->whereHas('sessions', fn($qq) => $qq->where('starts_at', '>=', now()))
+        )
         ->when($search !== '', function ($q) use ($search) {
             $q->where(function ($qq) use ($search) {
                 $qq->where('name', 'like', "%{$search}%")
-                  ->orWhereHas('course', function ($cq) use ($search) {
-                      $cq->where('title', 'like', "%{$search}%")
-                         ->orWhere('code', 'like', "%{$search}%");
-                  });
+                   ->orWhereHas('course', function ($cq) use ($search) {
+                       $cq->where('title', 'like', "%{$search}%")
+                          ->orWhere('code', 'like', "%{$search}%");
+                   });
             });
         })
-        ->latest()
-        ->paginate(10)
-        ->withQueryString();
+        ->select('study_groups.*'); 
+
+    if ($sort === 'old') {
+        $builder->orderBy('created_at', 'asc');
+    } elseif ($sort === 'members') {
+        $builder->orderBy('members_count', 'desc')->orderBy('created_at', 'desc');
+    } elseif ($sort === 'soonest') {
+      
+        $nextSessions = DB::table('group_sessions')
+            ->selectRaw('study_group_id, MIN(starts_at) as next_starts_at')
+            ->where('starts_at', '>=', now())
+            ->groupBy('study_group_id');
+
+        $builder
+            ->leftJoinSub($nextSessions, 'ns', function ($join) {
+                $join->on('ns.study_group_id', '=', 'study_groups.id');
+            })
+            ->orderByRaw('ns.next_starts_at IS NULL') 
+            ->orderBy('ns.next_starts_at', 'asc')
+            ->orderBy('study_groups.created_at', 'desc');
+    } else { 
+        $builder->orderBy('created_at', 'desc');
+    }
+
+    $groups = $builder->paginate(10)->withQueryString();
 
     $myGroupIds = auth()->user()->studyGroups()->pluck('study_groups.id')->toArray();
 
-    return view('groups.index', compact('groups', 'myGroupIds', 'onlyUpcoming', 'search'));
+    return view('groups.index', compact('groups', 'myGroupIds', 'onlyUpcoming', 'search', 'sort'));
 }
 
     public function join(StudyGroup $group)

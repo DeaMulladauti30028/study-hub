@@ -12,13 +12,26 @@
             @endif
     
             <div class="flex items-center justify-between">
-                <form method="GET" action="{{ route('groups.index') }}" class="flex items-center gap-4 text-sm">
+                <form method="GET" action="{{ route('groups.index') }}" class="flex flex-wrap items-center gap-4 text-sm">
+                    {{-- Upcoming filter --}}
                     <label class="inline-flex items-center gap-2">
                         <input id="upcoming" type="checkbox" name="upcoming" value="1"
                                @checked(request('upcoming')) onchange="this.form.submit()">
                         <span>Only groups with upcoming sessions</span>
                     </label>
             
+                    {{-- Sort dropdown --}}
+                    <label class="inline-flex items-center gap-2">
+                        <span>Sort:</span>
+                        <select name="sort" onchange="this.form.submit()" class="rounded border-gray-300">
+                            <option value="new"     @selected(request('sort','new')==='new')>Newest</option>
+                            <option value="old"     @selected(request('sort')==='old')>Oldest</option>
+                            <option value="members" @selected(request('sort')==='members')>Most members</option>
+                            <option value="soonest" @selected(request('sort')==='soonest')>Next session soonest</option>
+                        </select>
+                    </label>
+            
+                    {{-- Search --}}
                     <div class="flex items-center gap-2">
                         <input
                             type="text"
@@ -35,8 +48,7 @@
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                     + New Group
                 </a>
-            </div>
-            
+            </div>            
             
 
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
