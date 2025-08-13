@@ -11,13 +11,19 @@
                 <div class="p-3 bg-green-100 text-green-800 rounded">{{ session('status') }}</div>
             @endif
     
-            {{-- This is the button --}}
-            <div class="flex justify-end">
+            <div class="flex items-center justify-between">
+                <form method="GET" action="{{ route('groups.index') }}" class="flex items-center gap-2 text-sm">
+                    <input id="upcoming" type="checkbox" name="upcoming" value="1"
+                           @checked(request('upcoming')) onchange="this.form.submit()">
+                    <label for="upcoming">Only groups with upcoming sessions</label>
+                </form>
+            
                 <a href="{{ route('groups.create') }}"
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
                     + New Group
                 </a>
             </div>
+            
 
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">

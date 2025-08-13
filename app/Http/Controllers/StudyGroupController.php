@@ -8,17 +8,25 @@ use Illuminate\Http\Request;
 
 class StudyGroupController extends Controller
 {
-    public function index()
-    {
-        $groups = StudyGroup::with('course', 'nextSession')
-        ->withCount('members')         
+    public function index(Request $request)
+{
+    $onlyUpcoming = $request->boolean('upcoming');
+
+    $groups = StudyGroup::with(['course', 'nextSession'])
+        ->withCount('members')
+        ->when($onlyUpcoming, function ($q) {
+            $q->whereHas('sessions', function ($q2) {
+                $q2->where('starts_at', '>=', now());
+            });
+        })
         ->latest()
-        ->paginate(10);
+        ->paginate(10)
+        ->withQueryString(); 
 
     $myGroupIds = auth()->user()->studyGroups()->pluck('study_groups.id')->toArray();
 
-    return view('groups.index', compact('groups', 'myGroupIds'));
-    }
+    return view('groups.index', compact('groups', 'myGroupIds', 'onlyUpcoming'));
+}
 
     public function join(StudyGroup $group)
 {
