@@ -10,8 +10,8 @@ class StudyGroupController extends Controller
 {
     public function index()
     {
-        $groups = StudyGroup::with('course')
-        ->withCount('members')          // show member count
+        $groups = StudyGroup::with('course', 'nextSession')
+        ->withCount('members')         
         ->latest()
         ->paginate(10);
 

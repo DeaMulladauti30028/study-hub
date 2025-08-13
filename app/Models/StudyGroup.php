@@ -22,8 +22,16 @@ class StudyGroup extends Model
     }
 
     public function sessions()
+    {
+    return $this->hasMany(\App\Models\GroupSession::class); 
+    }
+
+    public function nextSession()
 {
-    return $this->hasMany(\App\Models\GroupSession::class);
+    return $this->hasOne(\App\Models\GroupSession::class)
+        ->where('starts_at', '>=', now())
+        ->orderBy('starts_at', 'asc');
 }
+
 
 }

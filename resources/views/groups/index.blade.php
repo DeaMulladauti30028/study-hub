@@ -32,6 +32,16 @@
                                 <p class="mt-1 text-sm">{{ $g->description }}</p>
                             @endif
                         </div>
+
+                        @if($g->nextSession)
+                            <div class="mt-1 inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200">
+                                Next: {{ $g->nextSession->starts_at->format('Y-m-d H:i') }}
+                                <span class="text-gray-500">• {{ $g->nextSession->duration_minutes }} min</span>
+                                <span class="text-gray-500">• {{ $g->nextSession->starts_at->diffForHumans() }}</span>
+                            </div>
+                        @else
+                            <div class="mt-1 text-xs text-gray-500">No upcoming sessions</div>
+                        @endif
                     
                         <div class="shrink-0">
                             @if(in_array($g->id, $myGroupIds ?? []))
