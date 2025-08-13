@@ -22,15 +22,37 @@
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     @forelse ($groups as $g)
-                        <div class="py-3 border-b border-gray-200/50 last:border-none">
+                    <div class="py-3 border-b border-gray-200/50 last:border-none flex items-start justify-between gap-4">
+                        <div>
                             <div class="font-semibold">{{ $g->name }}</div>
                             <div class="text-sm text-gray-500">
-                                Course: {{ $g->course?->title }} ({{ $g->course?->code }})
+                                Course: {{ $g->course?->title }} ({{ $g->course?->code }}) • {{ $g->members_count }} member{{ $g->members_count === 1 ? '' : 's' }}
                             </div>
                             @if($g->description)
                                 <p class="mt-1 text-sm">{{ $g->description }}</p>
                             @endif
                         </div>
+                    
+                        <div class="shrink-0">
+                            @if(in_array($g->id, $myGroupIds ?? []))
+                                <form method="POST" action="{{ route('groups.leave', $g) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700">
+                                        Leave
+                                    </button>
+                                </form>
+                            @else
+                                <form method="POST" action="{{ route('groups.join', $g) }}">
+                                    @csrf
+                                    <button class="px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700">
+                                        Join
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                    
                     @empty
                         <p>No study groups yet.</p>
                     @endforelse

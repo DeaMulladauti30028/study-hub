@@ -10,9 +10,27 @@ class StudyGroupController extends Controller
 {
     public function index()
     {
-        $groups = StudyGroup::with('course')->latest()->paginate(10);
-        return view('groups.index', compact('groups'));
+        $groups = StudyGroup::with('course')
+        ->withCount('members')          // show member count
+        ->latest()
+        ->paginate(10);
+
+    $myGroupIds = auth()->user()->studyGroups()->pluck('study_groups.id')->toArray();
+
+    return view('groups.index', compact('groups', 'myGroupIds'));
     }
+
+    public function join(StudyGroup $group)
+{
+    auth()->user()->studyGroups()->syncWithoutDetaching([$group->id]);
+    return back()->with('status', 'Joined the group!');
+}
+
+public function leave(StudyGroup $group)
+{
+    auth()->user()->studyGroups()->detach($group->id);
+    return back()->with('status', 'Left the group!');
+}
 
     public function create()
     {

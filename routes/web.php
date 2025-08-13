@@ -23,6 +23,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/groups', [StudyGroupController::class, 'index'])->name('groups.index');
     Route::get('/groups/create', [StudyGroupController::class, 'create'])->name('groups.create');
     Route::post('/groups', [StudyGroupController::class, 'store'])->name('groups.store');
+    Route::post('/groups/{group}/join', [StudyGroupController::class, 'join'])->name('groups.join');
+    Route::delete('/groups/{group}/leave', [StudyGroupController::class, 'leave'])->name('groups.leave');
+
 });
 
 require __DIR__.'/auth.php';

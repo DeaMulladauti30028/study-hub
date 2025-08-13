@@ -45,4 +45,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function studyGroups()
+{
+    return $this->belongsToMany(\App\Models\StudyGroup::class)->withTimestamps();
+}
+
 }
