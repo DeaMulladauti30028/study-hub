@@ -11,21 +11,29 @@ class StudyGroupController extends Controller
     public function index(Request $request)
 {
     $onlyUpcoming = $request->boolean('upcoming');
+    $search = trim((string) $request->get('q', ''));
 
     $groups = StudyGroup::with(['course', 'nextSession'])
         ->withCount('members')
         ->when($onlyUpcoming, function ($q) {
-            $q->whereHas('sessions', function ($q2) {
-                $q2->where('starts_at', '>=', now());
+            $q->whereHas('sessions', fn($qq) => $qq->where('starts_at', '>=', now()));
+        })
+        ->when($search !== '', function ($q) use ($search) {
+            $q->where(function ($qq) use ($search) {
+                $qq->where('name', 'like', "%{$search}%")
+                  ->orWhereHas('course', function ($cq) use ($search) {
+                      $cq->where('title', 'like', "%{$search}%")
+                         ->orWhere('code', 'like', "%{$search}%");
+                  });
             });
         })
         ->latest()
         ->paginate(10)
-        ->withQueryString(); 
+        ->withQueryString();
 
     $myGroupIds = auth()->user()->studyGroups()->pluck('study_groups.id')->toArray();
 
-    return view('groups.index', compact('groups', 'myGroupIds', 'onlyUpcoming'));
+    return view('groups.index', compact('groups', 'myGroupIds', 'onlyUpcoming', 'search'));
 }
 
     public function join(StudyGroup $group)

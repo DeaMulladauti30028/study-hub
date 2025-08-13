@@ -12,10 +12,23 @@
             @endif
     
             <div class="flex items-center justify-between">
-                <form method="GET" action="{{ route('groups.index') }}" class="flex items-center gap-2 text-sm">
-                    <input id="upcoming" type="checkbox" name="upcoming" value="1"
-                           @checked(request('upcoming')) onchange="this.form.submit()">
-                    <label for="upcoming">Only groups with upcoming sessions</label>
+                <form method="GET" action="{{ route('groups.index') }}" class="flex items-center gap-4 text-sm">
+                    <label class="inline-flex items-center gap-2">
+                        <input id="upcoming" type="checkbox" name="upcoming" value="1"
+                               @checked(request('upcoming')) onchange="this.form.submit()">
+                        <span>Only groups with upcoming sessions</span>
+                    </label>
+            
+                    <div class="flex items-center gap-2">
+                        <input
+                            type="text"
+                            name="q"
+                            value="{{ request('q') }}"
+                            placeholder="Search groups or courses…"
+                            class="rounded border-gray-300"
+                        >
+                        <button class="px-3 py-1.5 rounded border">Search</button>
+                    </div>
                 </form>
             
                 <a href="{{ route('groups.create') }}"
@@ -23,6 +36,7 @@
                     + New Group
                 </a>
             </div>
+            
             
 
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
