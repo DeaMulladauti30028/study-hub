@@ -50,6 +50,8 @@
                                     </button>
                                 </form>
                             @endif
+                            <a class="text-sm underline" href="{{ route('groups.sessions.index', $g) }}">Sessions</a>
+
                         </div>
                     </div>
                     

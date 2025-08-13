@@ -17,8 +17,16 @@ class GroupSession extends Model
         'notes',
     ];
 
+    protected $casts = [
+        'starts_at' => 'datetime',
+    ];
+
     public function studyGroup()
     {
         return $this->belongsTo(\App\Models\StudyGroup::class);
     }
+
+    
+
+    
 }
