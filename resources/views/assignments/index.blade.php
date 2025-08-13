@@ -32,6 +32,18 @@
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100 space-y-4">
                     @forelse ($assignments as $a)
+                    @if($isMember)
+                        <div class="mt-2 flex items-center gap-2">
+                            <a href="{{ route('groups.assignments.edit', [$group, $a]) }}" class="px-2 py-1 rounded border text-sm">Edit</a>
+                            <form method="POST" action="{{ route('groups.assignments.destroy', [$group, $a]) }}"
+                                onsubmit="return confirm('Delete this assignment?');">
+                            @csrf
+                            @method('DELETE')
+                            <button class="px-2 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700">Delete</button>
+                            </form>
+                        </div>
+                    @endif
+
                         <div class="py-3 border-b border-gray-200/50 last:border-none">
                             <div class="font-semibold">{{ $a->title }}</div>
 

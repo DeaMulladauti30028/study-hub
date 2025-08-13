@@ -27,6 +27,44 @@ class AssignmentController extends Controller
         return view('assignments.create', compact('group'));
     }
 
+    public function edit(StudyGroup $group, Assignment $assignment)
+{
+    abort_unless($assignment->study_group_id === $group->id, 404);
+    abort_unless(auth()->user()->studyGroups()->whereKey($group->id)->exists(), 403);
+    return view('assignments.edit', compact('group','assignment'));
+}
+
+public function update(Request $request, StudyGroup $group, Assignment $assignment)
+{
+    abort_unless($assignment->study_group_id === $group->id, 404);
+    abort_unless(auth()->user()->studyGroups()->whereKey($group->id)->exists(), 403);
+
+    $data = $request->validate([
+        'title'       => ['required','string','max:255'],
+        'due_at'      => ['nullable','date'],
+        'description' => ['nullable','string'],
+    ]);
+
+    if (!empty($data['due_at'])) {
+        $data['due_at'] = Carbon::parse($data['due_at']);
+    }
+
+    $assignment->update($data);
+
+    return redirect()->route('groups.assignments.index', $group)->with('status', 'Assignment updated!');
+}
+
+public function destroy(StudyGroup $group, Assignment $assignment)
+{
+    abort_unless($assignment->study_group_id === $group->id, 404);
+    abort_unless(auth()->user()->studyGroups()->whereKey($group->id)->exists(), 403);
+
+    $assignment->delete();
+
+    return redirect()->route('groups.assignments.index', $group)->with('status', 'Assignment deleted.');
+}
+
+
     public function store(Request $request, StudyGroup $group)
     {
         if (! auth()->user()->studyGroups()->whereKey($group->id)->exists()) {

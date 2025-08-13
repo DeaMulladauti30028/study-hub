@@ -37,6 +37,10 @@ Route::middleware('auth')->group(function () {
         Route::get('assignments',        [AssignmentController::class, 'index'])->name('groups.assignments.index');
         Route::get('assignments/create', [AssignmentController::class, 'create'])->name('groups.assignments.create');
         Route::post('assignments',       [AssignmentController::class, 'store'])->name('groups.assignments.store');
+        Route::get('assignments/{assignment}/edit', [AssignmentController::class, 'edit'])->name('groups.assignments.edit');
+        Route::patch('assignments/{assignment}',      [AssignmentController::class, 'update'])->name('groups.assignments.update');
+        Route::delete('assignments/{assignment}',     [AssignmentController::class, 'destroy'])->name('groups.assignments.destroy');
+
     });
 
 });
