@@ -27,11 +27,17 @@ class StudyGroup extends Model
     }
 
     public function nextSession()
-{
+    {
     return $this->hasOne(\App\Models\GroupSession::class)
         ->where('starts_at', '>=', now())
         ->orderBy('starts_at', 'asc');
-}
+    }
+
+    public function assignments()
+    {
+    return $this->hasMany(Assignment::class);
+    }
+
 
 
 }

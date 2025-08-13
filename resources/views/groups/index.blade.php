@@ -50,7 +50,6 @@
                 </a>
             </div>            
             
-
             <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     @forelse ($groups as $g)
@@ -93,6 +92,8 @@
                                 </form>
                             @endif
                             <a class="text-sm underline" href="{{ route('groups.sessions.index', $g) }}">Sessions</a>
+                            <a class="text-sm underline ml-2" href="{{ route('groups.assignments.index', $g) }}">Assignments</a>
+
 
                         </div>
                     </div>

@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudyGroupController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\GroupSessionController;
+use App\Http\Controllers\AssignmentController;
+
 
 
 Route::get('/', function () {
@@ -32,6 +34,9 @@ Route::middleware('auth')->group(function () {
         Route::get('sessions',        [GroupSessionController::class, 'index'])->name('groups.sessions.index');
         Route::get('sessions/create', [GroupSessionController::class, 'create'])->name('groups.sessions.create');
         Route::post('sessions',       [GroupSessionController::class, 'store'])->name('groups.sessions.store');
+        Route::get('assignments',        [AssignmentController::class, 'index'])->name('groups.assignments.index');
+        Route::get('assignments/create', [AssignmentController::class, 'create'])->name('groups.assignments.create');
+        Route::post('assignments',       [AssignmentController::class, 'store'])->name('groups.assignments.store');
     });
 
 });
