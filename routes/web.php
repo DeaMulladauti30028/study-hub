@@ -6,6 +6,7 @@ use App\Http\Controllers\StudyGroupController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\GroupSessionController;
 use App\Http\Controllers\AssignmentController;
+use App\Http\Controllers\GroupMaterialController;
 
 
 
@@ -40,6 +41,13 @@ Route::middleware('auth')->group(function () {
         Route::get('assignments/{assignment}/edit', [AssignmentController::class, 'edit'])->name('groups.assignments.edit');
         Route::patch('assignments/{assignment}',      [AssignmentController::class, 'update'])->name('groups.assignments.update');
         Route::delete('assignments/{assignment}',     [AssignmentController::class, 'destroy'])->name('groups.assignments.destroy');
+        Route::get('materials', [GroupMaterialController::class, 'index'])->name('groups.materials.index');
+        Route::post('materials', [GroupMaterialController::class, 'store'])->name('groups.materials.store');
+        Route::get('materials/{material}/download', [GroupMaterialController::class, 'download'])->name('groups.materials.download');
+        Route::delete('materials/{material}', [GroupMaterialController::class, 'destroy'])->name('groups.materials.destroy');
+        Route::get('/materials/{material}/preview',[GroupMaterialController::class, 'preview'])->name('groups.materials.preview');
+        
+
 
     });
 

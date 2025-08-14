@@ -54,49 +54,70 @@
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     @forelse ($groups as $g)
                     <div class="py-3 border-b border-gray-200/50 last:border-none flex items-start justify-between gap-4">
-                        <div>
+                        {{-- Left column --}}
+                        <div class="grow">
                             <div class="font-semibold">{{ $g->name }}</div>
                             <div class="text-sm text-gray-500">
-                                Course: {{ $g->course?->title }} ({{ $g->course?->code }}) • {{ $g->members_count }} member{{ $g->members_count === 1 ? '' : 's' }}
+                                Course: {{ $g->course?->title }} ({{ $g->course?->code }})
+                                • {{ $g->members_count }} member{{ $g->members_count === 1 ? '' : 's' }}
                             </div>
                             @if($g->description)
                                 <p class="mt-1 text-sm">{{ $g->description }}</p>
                             @endif
-                        </div>
 
-                        @if($g->nextSession)
-                            <div class="mt-1 inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200">
-                                Next: {{ $g->nextSession->starts_at->format('Y-m-d H:i') }}
-                                <span class="text-gray-500">• {{ $g->nextSession->duration_minutes }} min</span>
-                                <span class="text-gray-500">• {{ $g->nextSession->starts_at->diffForHumans() }}</span>
-                            </div>
-                        @else
-                            <div class="mt-1 text-xs text-gray-500">No upcoming sessions</div>
-                        @endif
                     
-                        <div class="shrink-0">
+                            {{-- Next session badge --}}
+                            @if($g->nextSession)
+                                <div class="mt-2 inline-flex items-center gap-2 text-xs px-2 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-200">
+                                    Next: {{ $g->nextSession->starts_at->format('Y-m-d H:i') }}
+                                    <span class="text-gray-500">• {{ $g->nextSession->duration_minutes }} min</span>
+                                    <span class="text-gray-500">• {{ $g->nextSession->starts_at->diffForHumans() }}</span>
+                                </div>
+                            @else
+                                <div class="mt-2 text-xs text-gray-500">No upcoming sessions</div>
+                            @endif
+                    
+                            {{-- Assignment badges --}}
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                @if(($g->overdue_assignments_count ?? 0) > 0)
+                                    <span class="px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200">
+                                        Overdue: {{ $g->overdue_assignments_count }}
+                                    </span>
+                                @endif
+                                @if(($g->due_soon_assignments_count ?? 0) > 0)
+                                    <span class="px-2 py-0.5 text-xs rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                                        Due soon: {{ $g->due_soon_assignments_count }}
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    
+                        {{-- Right column: actions --}}
+                        <div class="shrink-0 text-right space-y-2">
                             @if(in_array($g->id, $myGroupIds ?? []))
                                 <form method="POST" action="{{ route('groups.leave', $g) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button class="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700">
-                                        Leave
-                                    </button>
+                                    <button class="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700">Leave</button>
                                 </form>
                             @else
                                 <form method="POST" action="{{ route('groups.join', $g) }}">
                                     @csrf
-                                    <button class="px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700">
-                                        Join
-                                    </button>
+                                    <button class="px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700">Join</button>
                                 </form>
                             @endif
-                            <a class="text-sm underline" href="{{ route('groups.sessions.index', $g) }}">Sessions</a>
-                            <a class="text-sm underline ml-2" href="{{ route('groups.assignments.index', $g) }}">Assignments</a>
+                    
+                            <div class="text-sm">
+                                @if(in_array($g->id, $myGroupIds ?? []))
+                                <a class="underline" href="{{ route('groups.materials.index', $g) }}">Materials</a>
+                                @endif
 
-
+                                <a class="underline" href="{{ route('groups.sessions.index', $g) }}">Sessions</a>
+                                <a class="underline ml-2" href="{{ route('groups.assignments.index', $g) }}">Assignments</a>
+                            </div>
                         </div>
                     </div>
+                    
                     
                     @empty
                         <p>No study groups yet.</p>

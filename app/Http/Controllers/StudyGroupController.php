@@ -9,27 +9,37 @@ use Illuminate\Support\Facades\DB;
 
 class StudyGroupController extends Controller
 {
+    
     public function index(Request $request){
+    $now  = now();
+    $soon = now()->addDays(3);        
     $onlyUpcoming = $request->boolean('upcoming');
     $search = trim((string) $request->get('q', ''));
     $sort   = $request->get('sort', 'new'); 
 
     $builder = StudyGroup::query()
-        ->with(['course', 'nextSession'])
-        ->withCount('members')
-        ->when($onlyUpcoming, fn($q) =>
-            $q->whereHas('sessions', fn($qq) => $qq->where('starts_at', '>=', now()))
-        )
-        ->when($search !== '', function ($q) use ($search) {
-            $q->where(function ($qq) use ($search) {
-                $qq->where('name', 'like', "%{$search}%")
-                   ->orWhereHas('course', function ($cq) use ($search) {
-                       $cq->where('title', 'like', "%{$search}%")
-                          ->orWhere('code', 'like', "%{$search}%");
-                   });
-            });
-        })
-        ->select('study_groups.*'); 
+    ->with(['course', 'nextSession'])
+    ->withCount('members') // ← add this
+    ->withCount([
+        'assignments as overdue_assignments_count' => fn($q) =>
+            $q->whereNotNull('due_at')->where('due_at', '<', $now),
+        'assignments as due_soon_assignments_count' => fn($q) =>
+            $q->whereNotNull('due_at')->whereBetween('due_at', [$now, $soon]),
+    ])
+    ->when($onlyUpcoming, fn($q) =>
+        $q->whereHas('sessions', fn($qq) => $qq->where('starts_at', '>=', now()))
+    )
+    ->when($search !== '', function ($q) use ($search) {
+        $q->where(function ($qq) use ($search) {
+            $qq->where('name', 'like', "%{$search}%")
+               ->orWhereHas('course', function ($cq) use ($search) {
+                   $cq->where('title', 'like', "%{$search}%")
+                      ->orWhere('code', 'like', "%{$search}%");
+               });
+        });
+    })
+    ->select('study_groups.*');
+
 
     if ($sort === 'old') {
         $builder->orderBy('created_at', 'asc');
