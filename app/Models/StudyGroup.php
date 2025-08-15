@@ -23,12 +23,12 @@ class StudyGroup extends Model
 
     public function sessions()
     {
-    return $this->hasMany(\App\Models\GroupSession::class); 
+    return $this->hasMany(GroupSession::class); 
     }
 
     public function nextSession()
     {
-    return $this->hasOne(\App\Models\GroupSession::class)
+    return $this->hasOne(GroupSession::class)
         ->where('starts_at', '>=', now())
         ->orderBy('starts_at', 'asc');
     }
@@ -37,6 +37,20 @@ class StudyGroup extends Model
     {
     return $this->hasMany(Assignment::class);
     }
+
+    public function isMember(User $user): bool
+    {
+    return $this->members()->whereKey($user->id)->exists();
+    }
+    
+    /**
+ * TODO: fix when i add roles/owner.
+ */
+    public function isOwnerOrModerator(User $user): bool
+    {
+    return $this->isMember($user);
+    }
+
 
 
 

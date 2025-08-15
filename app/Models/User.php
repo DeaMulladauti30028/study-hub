@@ -47,8 +47,23 @@ class User extends Authenticatable
     }
 
     public function studyGroups()
-{
-    return $this->belongsToMany(\App\Models\StudyGroup::class)->withTimestamps();
-}
+    {
+    return $this->belongsToMany(StudyGroup::class)->withTimestamps();
+    }
+
+    public function assignments()
+    {
+        return $this->belongsToMany(Assignment::class)
+            ->withPivot('done_at')
+            ->withTimestamps();
+    }
+
+    public function completedAssignmentsCountForGroup(StudyGroup $group): int
+    {
+        return $this->assignments()
+            ->where('assignments.study_group_id', $group->id)
+            ->whereNotNull('assignment_user.done_at')
+            ->count();
+    }
 
 }

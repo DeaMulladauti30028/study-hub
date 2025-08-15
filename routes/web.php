@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\GroupSessionController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\GroupMaterialController;
+use App\Http\Controllers\GroupAssignmentController;
 
 
 
@@ -35,18 +36,22 @@ Route::middleware('auth')->group(function () {
         Route::get('sessions',        [GroupSessionController::class, 'index'])->name('groups.sessions.index');
         Route::get('sessions/create', [GroupSessionController::class, 'create'])->name('groups.sessions.create');
         Route::post('sessions',       [GroupSessionController::class, 'store'])->name('groups.sessions.store');
-        Route::get('assignments',        [AssignmentController::class, 'index'])->name('groups.assignments.index');
-        Route::get('assignments/create', [AssignmentController::class, 'create'])->name('groups.assignments.create');
-        Route::post('assignments',       [AssignmentController::class, 'store'])->name('groups.assignments.store');
-        Route::get('assignments/{assignment}/edit', [AssignmentController::class, 'edit'])->name('groups.assignments.edit');
-        Route::patch('assignments/{assignment}',      [AssignmentController::class, 'update'])->name('groups.assignments.update');
-        Route::delete('assignments/{assignment}',     [AssignmentController::class, 'destroy'])->name('groups.assignments.destroy');
+        
         Route::get('materials', [GroupMaterialController::class, 'index'])->name('groups.materials.index');
         Route::post('materials', [GroupMaterialController::class, 'store'])->name('groups.materials.store');
         Route::get('materials/{material}/download', [GroupMaterialController::class, 'download'])->name('groups.materials.download');
         Route::delete('materials/{material}', [GroupMaterialController::class, 'destroy'])->name('groups.materials.destroy');
         Route::get('/materials/{material}/preview',[GroupMaterialController::class, 'preview'])->name('groups.materials.preview');
-        
+
+
+        Route::get('/tasks', [GroupAssignmentController::class, 'index'])->name('groups.tasks.index');
+        Route::post('/tasks/{assignment}/toggle', [GroupAssignmentController::class, 'toggleDone'])->name('groups.tasks.toggle');
+
+        Route::get('tasks/create',             [GroupAssignmentController::class, 'create'])->name('groups.tasks.create');
+        Route::post('tasks',                   [GroupAssignmentController::class, 'store'])->name('groups.tasks.store');
+        Route::get('tasks/{assignment}/edit',  [GroupAssignmentController::class, 'edit'])->name('groups.tasks.edit');
+        Route::put('tasks/{assignment}',       [GroupAssignmentController::class, 'update'])->name('groups.tasks.update');
+        Route::delete('tasks/{assignment}',    [GroupAssignmentController::class, 'destroy'])->name('groups.tasks.destroy');
 
 
     });

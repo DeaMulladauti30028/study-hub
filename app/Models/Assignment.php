@@ -6,14 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Assignment extends Model
 {
-    protected $fillable = ['study_group_id','title','due_at','description'];
+    // If not already present:
+    protected $fillable = ['title','description','due_at','study_group_id'];
+    protected $casts = ['due_at' => 'datetime'];
 
-    protected $casts = [
-        'due_at' => 'datetime',
-    ];
-
-    public function studyGroup()
+    public function group()
     {
-        return $this->belongsTo(StudyGroup::class);
+        return $this->belongsTo(StudyGroup::class, 'study_group_id');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class)
+            ->withPivot('done_at')
+            ->withTimestamps();
     }
 }

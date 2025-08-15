@@ -113,7 +113,8 @@
                                 @endif
 
                                 <a class="underline" href="{{ route('groups.sessions.index', $g) }}">Sessions</a>
-                                <a class="underline ml-2" href="{{ route('groups.assignments.index', $g) }}">Assignments</a>
+                                
+                                <a class="underline ml-2" href="{{ route('groups.tasks.index', $g) }}">Study Tasks</a>
                             </div>
                         </div>
                     </div>
