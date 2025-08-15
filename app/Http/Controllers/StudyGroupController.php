@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 class StudyGroupController extends Controller
 {
     
+    protected $fillable = ['course_id','name','description','owner_id'];
+
     public function index(Request $request){
     $now  = now();
     $soon = now()->addDays(3);        
@@ -89,15 +91,24 @@ public function leave(StudyGroup $group)
     }
 
     public function store(Request $request)
-    {
-        $data = $request->validate([
-            'course_id'   => ['required','exists:courses,id'],
-            'name'        => ['required','string','max:255'],
-            'description' => ['nullable','string'],
-        ]);
+{
+    $validated = $request->validate([
+        'course_id'   => ['required', 'exists:courses,id'],
+        'name'        => ['required', 'string', 'max:255'],
+        'description' => ['nullable', 'string'],
+    ]);
 
-        StudyGroup::create($data);
+    $group = StudyGroup::create([
+        'course_id'   => $validated['course_id'],
+        'name'        => $validated['name'],
+        'description' => $validated['description'] ?? null,
+        'owner_id'    => $request->user()->id,
+    ]);
 
-        return redirect()->route('groups.index')->with('status', 'Study group created!');
-    }
+    $group->members()->syncWithoutDetaching([$request->user()->id]);
+
+    return redirect()
+        ->route('groups.index')
+        ->with('status', 'Study group created!');
+}
 }

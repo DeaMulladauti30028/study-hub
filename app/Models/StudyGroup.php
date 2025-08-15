@@ -51,6 +51,9 @@ class StudyGroup extends Model
     return $this->isMember($user);
     }
 
+    public function owner() { return $this->belongsTo(User::class, 'owner_id'); }
+
+
 
 
 
