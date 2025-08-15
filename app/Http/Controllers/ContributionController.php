@@ -22,6 +22,7 @@ class ContributionController extends Controller
 
         $query = Contribution::with('user')
             ->withCount('helpfuls')
+            ->withCount('comments')
             ->where('study_group_id', $group->id);
 
         // Filters

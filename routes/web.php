@@ -9,6 +9,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\GroupMaterialController;
 use App\Http\Controllers\GroupAssignmentController;
 use App\Http\Controllers\ContributionController;
+use App\Http\Controllers\ContributionCommentController;
 
 
 
@@ -65,6 +66,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('contributions/{contribution}', [ContributionController::class, 'destroy'])->name('groups.contributions.destroy');
         Route::post('contributions/{contribution}/helpful', [ContributionController::class, 'toggleHelpful'])->name('groups.contributions.helpful.toggle');
         Route::post('contributions/{contribution}/endorse', [ContributionController::class, 'toggleEndorse'])->name('groups.contributions.endorse.toggle');
+
+        Route::post('contributions/{contribution}/comments', [ContributionCommentController::class, 'store'])->name('groups.contributions.comments.store');
+        Route::delete('contributions/{contribution}/comments/{comment}', [ContributionCommentController::class, 'destroy'])->name('groups.contributions.comments.destroy');
 
 
 

@@ -75,6 +75,44 @@
             @endif
         @endcan
 
+        <hr class="my-4">
+
+        <h3 class="font-semibold">Comments</h3>
+
+        {{-- Add comment (members only) --}}
+        @can('create', [\App\Models\ContributionComment::class, $contribution])
+        <form method="POST" action="{{ route('groups.contributions.comments.store', [$group, $contribution]) }}" class="space-y-2 mb-4">
+            @csrf
+            <textarea name="body" rows="3" class="w-full border rounded p-2" placeholder="Write a comment...">{{ old('body') }}</textarea>
+            @error('body') <div class="text-red-600 text-sm">{{ $message }}</div> @enderror
+            <button class="px-3 py-1 rounded bg-blue-600 text-white">Post comment</button>
+        </form>
+        @endcan
+
+        {{-- List comments --}}
+        <div class="space-y-3">
+        @forelse ($contribution->comments()->with('user')->get() as $cm)
+            <div class="p-3 border rounded">
+                <div class="text-sm text-gray-500">
+                    {{ $cm->user->name ?? 'User' }} • {{ $cm->created_at->diffForHumans() }}
+                </div>
+                <div class="mt-1">{!! nl2br(e($cm->body)) !!}</div>
+
+                @can('delete', $cm)
+                <form method="POST" action="{{ route('groups.contributions.comments.destroy', [$group, $contribution, $cm]) }}"
+                    onsubmit="return confirm('Delete this comment?');" class="mt-2">
+                    @csrf
+                    @method('DELETE')
+                    <button class="px-2 py-1 rounded bg-red-600 text-white text-xs">Delete</button>
+                </form>
+                @endcan
+            </div>
+        @empty
+            <p class="text-gray-500 text-sm">No comments yet.</p>
+        @endforelse
+        </div>
+
+
         <div>
             <a class="text-blue-600 underline" href="{{ route('groups.contributions.index', $group) }}">Back to list</a>
         </div>

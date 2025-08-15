@@ -51,6 +51,8 @@
                 <div class="text-xs text-gray-500">
                     {{ $c->user->name ?? 'User' }} • {{ $c->created_at->diffForHumans() }}
                     • Helpful: {{ $c->helpfuls_count }}
+                    • Comments: {{ $c->comments_count }}
+
                 </div>
                 @if ($c->is_accepted)
                     <span class="ml-2 px-2 py-0.5 text-xs rounded bg-green-100 text-green-800">Accepted</span>

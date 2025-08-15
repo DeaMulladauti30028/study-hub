@@ -40,4 +40,10 @@ class Contribution extends Model
         return $this->belongsToMany(User::class, 'contribution_helpfuls')->withTimestamps();
     }
 
+    public function comments()
+{
+    return $this->hasMany(ContributionComment::class)->latest();
+}
+
+
 }
