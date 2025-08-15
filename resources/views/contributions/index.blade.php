@@ -22,6 +22,11 @@
                     </div>
                     <div class="font-medium">{{ $c->title }}</div>
                 </a>
+                <div class="text-xs text-gray-500">
+                    {{ $c->user->name ?? 'User' }} • {{ $c->created_at->diffForHumans() }}
+                    • Helpful: {{ $c->helpfuls_count }}
+                </div>
+                
             @empty
                 <p class="text-gray-500">No contributions yet.</p>
             @endforelse

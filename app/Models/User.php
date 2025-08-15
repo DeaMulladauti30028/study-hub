@@ -66,4 +66,9 @@ class User extends Authenticatable
             ->count();
     }
 
+    public function helpfulContributions()
+    {
+        return $this->belongsToMany(\App\Models\Contribution::class, 'contribution_helpfuls')->withTimestamps();
+    }
+
 }

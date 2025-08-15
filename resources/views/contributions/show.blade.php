@@ -41,6 +41,21 @@
             </div>
         @endif
 
+        @can('view', $contribution)
+            @if (auth()->id() !== $contribution->user_id)
+                <form method="POST" action="{{ route('groups.contributions.helpful.toggle', [$group, $contribution]) }}" class="mt-2 inline-block">
+                    @csrf
+                    <button class="px-3 py-1 rounded border">
+                        {{ $hasHelpful ? 'Unmark Helpful' : 'Mark Helpful' }}
+                    </button>
+                </form>
+            @endif
+            <div class="text-sm text-gray-500 mt-1">
+                Helpful: {{ $contribution->helpfuls()->count() }}
+            </div>
+        @endcan
+
+
         <div>
             <a class="text-blue-600 underline" href="{{ route('groups.contributions.index', $group) }}">Back to list</a>
         </div>

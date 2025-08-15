@@ -28,4 +28,10 @@ class Contribution extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function helpfuls()
+    {
+        return $this->belongsToMany(User::class, 'contribution_helpfuls')->withTimestamps();
+    }
+
 }

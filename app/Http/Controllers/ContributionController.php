@@ -17,7 +17,9 @@ class ContributionController extends Controller
     {
         // Only members can list
         $this->authorize('create', [Contribution::class, $group]); // membership check
+
         $items = Contribution::with('user')
+            ->withCount('helpfuls') 
             ->where('study_group_id', $group->id)
             ->orderByDesc('created_at')
             ->paginate(12);
@@ -64,10 +66,13 @@ class ContributionController extends Controller
     {
         abort_unless($contribution->study_group_id === $group->id, 404);
         $this->authorize('view', $contribution);
+        
 
         $contribution->load('user');
 
-        return view('contributions.show', compact('group', 'contribution'));
+        $hasHelpful = $contribution->helpfuls()->whereKey(auth()->id())->exists();
+        return view('contributions.show', compact('group', 'contribution', 'hasHelpful'));
+
     }
 
     // GET /groups/{group}/contributions/{contribution}/file
@@ -165,4 +170,31 @@ class ContributionController extends Controller
                 ->route('groups.contributions.index', $group)
                 ->with('status', 'Contribution removed.');
         }
+
+        public function toggleHelpful(StudyGroup $group, Contribution $contribution)
+        {
+            abort_unless($contribution->study_group_id === $group->id, 404);
+            // Membership check (reuse view permission)
+            $this->authorize('view', $contribution);
+
+            // Optional fairness rule: author cannot upvote own post
+            if (auth()->id() === $contribution->user_id) {
+                abort(403, 'Authors cannot mark their own contribution as helpful.');
+            }
+
+            $already = $contribution->helpfuls()->whereKey(auth()->id())->exists();
+
+            if ($already) {
+                $contribution->helpfuls()->detach(auth()->id());
+                $msg = 'Removed your helpful mark.';
+            } else {
+                $contribution->helpfuls()->attach(auth()->id());
+                $msg = 'Marked as helpful.';
+            }
+
+            return back()->with('status', $msg);
+        }
+
+
+        
 }
