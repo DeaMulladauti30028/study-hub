@@ -12,19 +12,38 @@ use App\Http\Requests\UpdateContributionRequest;
 
 class ContributionController extends Controller
 {
-    // GET /groups/{group}/contributions
-    public function index(StudyGroup $group)
-    {
-        // Only members can list
-        $this->authorize('create', [Contribution::class, $group]); // membership check
+            // GET /groups/{group}/contributions
+            public function index(StudyGroup $group)
+            {
+                $this->authorize('create', [Contribution::class, $group]); // membership gate
 
-        $items = Contribution::with('user')
-            ->withCount('helpfuls') 
-            ->where('study_group_id', $group->id)
-            ->orderByDesc('created_at')
-            ->paginate(12);
+        $filter = request('filter'); // 'accepted' | 'mine' | null
+        $sort   = request('sort');   // 'helpful' | 'newest' | 'oldest'
+
+        $query = Contribution::with('user')
+            ->withCount('helpfuls')
+            ->where('study_group_id', $group->id);
+
+        // Filters
+        if ($filter === 'accepted') {
+            $query->where('is_accepted', true);
+        } elseif ($filter === 'mine') {
+            $query->where('user_id', auth()->id());
+        }
+
+        // Sorting
+        if ($sort === 'helpful') {
+            $query->orderByDesc('helpfuls_count')->orderByDesc('created_at');
+        } elseif ($sort === 'oldest') {
+            $query->orderBy('created_at');
+        } else { // default: newest
+            $query->orderByDesc('created_at');
+        }
+
+        $items = $query->paginate(12)->appends(request()->query());
 
         return view('contributions.index', compact('group', 'items'));
+
     }
 
     // GET /groups/{group}/contributions/create
@@ -194,6 +213,36 @@ class ContributionController extends Controller
 
             return back()->with('status', $msg);
         }
+
+        public function toggleEndorse(StudyGroup $group, Contribution $contribution)
+        {
+            abort_unless($contribution->study_group_id === $group->id, 404);
+            $this->authorize('endorse', $contribution);
+
+            // Optional: prevent author from endorsing their own post even if they’re owner
+            if (auth()->id() === $contribution->user_id) {
+                abort(403, 'Authors cannot endorse their own contribution.');
+            }
+
+            if ($contribution->is_accepted) {
+                // un-endorse
+                $contribution->is_accepted = false;
+                $contribution->accepted_by = null;
+                $contribution->accepted_at = null;
+                $msg = 'Endorsement removed.';
+            } else {
+                // endorse
+                $contribution->is_accepted = true;
+                $contribution->accepted_by = auth()->id();
+                $contribution->accepted_at = now();
+                $msg = 'Contribution endorsed.';
+            }
+
+            $contribution->save();
+
+            return back()->with('status', $msg);
+        }
+
 
 
         

@@ -64,6 +64,7 @@ Route::middleware('auth')->group(function () {
         Route::put('contributions/{contribution}', [ContributionController::class, 'update'])->name('groups.contributions.update');
         Route::delete('contributions/{contribution}', [ContributionController::class, 'destroy'])->name('groups.contributions.destroy');
         Route::post('contributions/{contribution}/helpful', [ContributionController::class, 'toggleHelpful'])->name('groups.contributions.helpful.toggle');
+        Route::post('contributions/{contribution}/endorse', [ContributionController::class, 'toggleEndorse'])->name('groups.contributions.endorse.toggle');
 
 
 

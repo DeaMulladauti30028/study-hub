@@ -9,6 +9,12 @@ class Contribution extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'accepted_at' => 'datetime',
+        'is_accepted' => 'boolean',
+    ];
+    
+
     protected $fillable = [
         'study_group_id',
         'user_id',

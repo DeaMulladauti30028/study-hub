@@ -55,6 +55,25 @@
             </div>
         @endcan
 
+        @if ($contribution->is_accepted)
+            <div class="text-sm text-green-700">
+                Accepted {{ $contribution->accepted_at?->diffForHumans() }}
+                @if ($contribution->accepted_by)
+                    by {{ optional(\App\Models\User::find($contribution->accepted_by))->name ?? 'owner' }}
+                @endif
+            </div>
+        @endif
+  
+        @can('endorse', $contribution)
+            @if (auth()->id() !== $contribution->user_id)
+                <form method="POST" action="{{ route('groups.contributions.endorse.toggle', [$group, $contribution]) }}" class="mt-2 inline-block">
+                    @csrf
+                    <button class="px-3 py-1 rounded border">
+                        {{ $contribution->is_accepted ? 'Un-accept' : 'Mark as Accepted' }}
+                    </button>
+                </form>
+            @endif
+        @endcan
 
         <div>
             <a class="text-blue-600 underline" href="{{ route('groups.contributions.index', $group) }}">Back to list</a>

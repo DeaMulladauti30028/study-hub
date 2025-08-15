@@ -11,9 +11,9 @@ class ContributionPolicy
     // Helper: is the user a member (or owner) of the group?
     protected function isMember(User $user, StudyGroup $group): bool
     {
-        // owner_id support if you’ve added it; otherwise just membership
-        $isOwner = property_exists($group, 'owner_id') && $group->owner_id === $user->id;
-
+        // Treat owner as a member
+        $isOwner = (int) $group->owner_id === (int) $user->id;
+    
         return $isOwner || $group->members()->whereKey($user->id)->exists();
     }
 
@@ -40,5 +40,19 @@ class ContributionPolicy
     public function delete(User $user, Contribution $contribution): bool
     {
         return $this->update($user, $contribution);
+    }
+
+
+    public function endorse(User $user, Contribution $contribution): bool
+    {
+        $group = $contribution->group;
+    
+        // Must be in the group (owner counts as member)
+        if (!$this->isMember($user, $group)) {
+            return false;
+        }
+    
+        // Only the owner can endorse (add moderators later if needed)
+        return (int) $group->owner_id === (int) $user->id;
     }
 }
