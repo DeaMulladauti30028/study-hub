@@ -16,6 +16,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         GroupMaterial::class => GroupMaterialPolicy::class,
         Assignment::class => AssignmentPolicy::class,
+        Contribution::class => ContributionPolicy::class,
     ];
 
     
