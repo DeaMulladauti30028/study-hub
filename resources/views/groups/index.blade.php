@@ -115,6 +115,9 @@
                                 <a class="underline" href="{{ route('groups.sessions.index', $g) }}">Sessions</a>
                                 
                                 <a class="underline ml-2" href="{{ route('groups.tasks.index', $g) }}">Study Tasks</a>
+
+                                <a class="text-blue-600 underline" href="{{ route('groups.contributions.index', $g) }}">Contributions</a>
+
                             </div>
                         </div>
                     </div>
