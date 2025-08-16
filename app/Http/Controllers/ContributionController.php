@@ -13,37 +13,37 @@ use App\Http\Requests\UpdateContributionRequest;
 class ContributionController extends Controller
 {
             // GET /groups/{group}/contributions
-            public function index(StudyGroup $group)
-            {
-                $this->authorize('create', [Contribution::class, $group]); // membership gate
+        public function index(StudyGroup $group){
 
-        $filter = request('filter'); // 'accepted' | 'mine' | null
-        $sort   = request('sort');   // 'helpful' | 'newest' | 'oldest'
+            $this->authorize('create', [Contribution::class, $group]); // membership gate
 
-        $query = Contribution::with('user')
-            ->withCount('helpfuls')
-            ->withCount('comments')
-            ->where('study_group_id', $group->id);
+            $filter = request('filter'); // 'accepted' | 'mine' | null
+            $sort   = request('sort');   // 'helpful' | 'newest' | 'oldest'
 
-        // Filters
-        if ($filter === 'accepted') {
-            $query->where('is_accepted', true);
-        } elseif ($filter === 'mine') {
-            $query->where('user_id', auth()->id());
-        }
+            $query = Contribution::with('user')
+                ->withCount('helpfuls')
+                ->withCount('comments')
+                ->where('study_group_id', $group->id);
 
-        // Sorting
-        if ($sort === 'helpful') {
-            $query->orderByDesc('helpfuls_count')->orderByDesc('created_at');
-        } elseif ($sort === 'oldest') {
-            $query->orderBy('created_at');
-        } else { // default: newest
-            $query->orderByDesc('created_at');
-        }
+            // Filters
+            if ($filter === 'accepted') {
+                $query->where('is_accepted', true);
+            } elseif ($filter === 'mine') {
+                $query->where('user_id', auth()->id());
+            }
 
-        $items = $query->paginate(12)->appends(request()->query());
+            // Sorting
+            if ($sort === 'helpful') {
+                $query->orderByDesc('helpfuls_count')->orderByDesc('created_at');
+            } elseif ($sort === 'oldest') {
+                $query->orderBy('created_at');
+            } else { // default: newest
+                $query->orderByDesc('created_at');
+            }
 
-        return view('contributions.index', compact('group', 'items'));
+            $items = $query->paginate(12)->appends(request()->query());
+
+        return view('groups.contributions.index', compact('group', 'items'));
 
     }
 
@@ -51,7 +51,7 @@ class ContributionController extends Controller
     public function create(StudyGroup $group)
     {
         $this->authorize('create', [Contribution::class, $group]);
-        return view('contributions.create', compact('group'));
+        return view('groups.contributions.create', compact('group'));
     }
 
     // POST /groups/{group}/contributions
@@ -84,15 +84,28 @@ class ContributionController extends Controller
     // GET /groups/{group}/contributions/{contribution}
     public function show(StudyGroup $group, Contribution $contribution)
     {
-        abort_unless($contribution->study_group_id === $group->id, 404);
+        abort_unless((int) $contribution->study_group_id === (int) $group->id, 404);
         $this->authorize('view', $contribution);
+
+        $contribution->load([
+            'user:id,name',
+            // newest first
+            'comments' => fn ($q) => $q->latest(),
+            'comments.user:id,name',
+            // optional if you added this relation in the model:
+            // 'acceptedBy:id,name',
+        ]);
+
+        $hasHelpful = $contribution->helpfuls()
+            ->whereKey(auth()->id())
+            ->exists();
+
         
-
-        $contribution->load('user');
-
-        $hasHelpful = $contribution->helpfuls()->whereKey(auth()->id())->exists();
-        return view('contributions.show', compact('group', 'contribution', 'hasHelpful'));
-
+        return view('groups.contributions.show', [
+            'group'        => $group,
+            'contribution'            => $contribution,  
+            'hasHelpful'   => $hasHelpful,
+        ]);
     }
 
     // GET /groups/{group}/contributions/{contribution}/file

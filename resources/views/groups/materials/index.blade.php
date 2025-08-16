@@ -13,6 +13,25 @@ function mat_category($mime) {
 }
 @endphp
 
+@php
+[$pinned, $others] = $materials->getCollection()->partition(fn($m) => !is_null($m->pinned_at));
+@endphp
+
+@if($pinned->isNotEmpty())
+  <h3 class="mt-4 mb-2 text-sm font-semibold text-yellow-800">Pinned</h3>
+  @foreach($pinned as $m)
+    {{-- render each pinned item (same card markup) --}}
+  @endforeach
+@endif
+
+@if($others->isNotEmpty())
+  <h3 class="mt-6 mb-2 text-sm font-semibold text-gray-800">All materials</h3>
+  @foreach($others as $m)
+    {{-- render each non-pinned item --}}
+  @endforeach
+@endif
+
+
 {{-- Alpine helper (hide until ready) --}}
 <style>[x-cloak]{ display:none !important; }</style>
 
@@ -88,6 +107,11 @@ function mat_category($mime) {
                                     {{ mat_category($m->mime_type) }}
                                 </span>
                                 <span class="font-medium">{{ $m->title }}</span>
+                                
+                                @if($m->pinned_at)
+                                    <span class="ml-2 px-2 py-0.5 text-xs rounded bg-yellow-100 text-yellow-800">Pinned</span>
+                                @endif
+                                
 
                                 <div class="text-sm text-gray-600 dark:text-gray-300">
                                     {{ $m->original_name ?? basename($m->file_path) }} ·
@@ -102,15 +126,29 @@ function mat_category($mime) {
                             {{-- Actions --}}
                             <div class="flex gap-3 items-center shrink-0">
                                 @can('delete', $m)
-                                    <form method="POST" action="{{ route('groups.materials.destroy', [$group, $m]) }}"
-                                          onsubmit="return confirm('Delete this material?')">
+                                    <form method="POST" action="{{ route('groups.materials.destroy', [$group, $m]) }}" onsubmit="return confirm('Delete this material?')">
                                         @csrf @method('DELETE')
                                         <button class="text-red-600 underline">Delete</button>
                                     </form>
                                 @endcan
+                            
+                                @can('pin', $m)
+                                    @if(!$m->pinned_at)
+                                        <form method="POST" action="{{ route('groups.materials.pin', [$group, $m]) }}">
+                                            @csrf
+                                            <button class="text-amber-700 underline">Pin</button>
+                                        </form>
+                                    @else
+                                        <form method="POST" action="{{ route('groups.materials.unpin', [$group, $m]) }}">
+                                            @csrf @method('DELETE')
+                                            <button class="text-gray-700 underline">Unpin</button>
+                                        </form>
+                                    @endif
+                                @endcan
+                            
                                 <a class="underline" href="{{ route('groups.materials.download', [$group, $m]) }}">Download</a>
                             </div>
-                        </div>
+                            
 
                         {{-- Inline preview block --}}
                         @if ($previewableImage)

@@ -12,6 +12,7 @@ class Contribution extends Model
     protected $casts = [
         'accepted_at' => 'datetime',
         'is_accepted' => 'boolean',
+        
     ];
     
 
@@ -24,6 +25,13 @@ class Contribution extends Model
         'mime_type',
         'is_edited',
     ];
+
+    
+    public function acceptedBy()
+    {
+        return $this->belongsTo(User::class, 'accepted_by');
+    }
+    
 
     public function group()
     {

@@ -16,13 +16,28 @@
     </div>
     @endcan
 
-
     <div class="max-w-3xl mx-auto p-4 space-y-3">
+        @if (session('status'))
+            <div class="p-3 bg-green-100 text-green-800 rounded">{{ session('status') }}</div>
+        @endif
+        @if ($errors->any())
+            <div class="p-3 bg-red-100 text-red-800 rounded">
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <div class="text-sm text-gray-500">
             {{ $contribution->user->name ?? 'User' }} •
             {{ $contribution->created_at->format('M j, Y H:i') }}
             @if ($contribution->is_edited)
                 <span class="ml-2 px-2 py-0.5 text-xs rounded bg-gray-100">Edited</span>
+            @endif
+            @if ($contribution->accepted_at)
+                <span class="ml-2 px-2 py-0.5 text-xs rounded bg-green-100 text-green-800">Endorsed</span>
             @endif
         </div>
 
@@ -41,6 +56,7 @@
             </div>
         @endif
 
+        {{-- Helpful --}}
         @can('view', $contribution)
             @if (auth()->id() !== $contribution->user_id)
                 <form method="POST" action="{{ route('groups.contributions.helpful.toggle', [$group, $contribution]) }}" class="mt-2 inline-block">
@@ -55,7 +71,25 @@
             </div>
         @endcan
 
-        @if ($contribution->is_accepted)
+        {{-- Endorse / Unendorse (owner or moderator) --}}
+        @can('endorse', $contribution)
+            @if (auth()->id() !== $contribution->user_id)
+                @if (!$contribution->accepted_at)
+                    <form method="POST" action="{{ route('contributions.endorse', [$group, $contribution]) }}" class="mt-2 inline-block">
+                        @csrf
+                        <button class="px-3 py-1 rounded border">Mark as Accepted</button>
+                    </form>
+                @else
+                    <form method="POST" action="{{ route('contributions.unendorse', [$group, $contribution]) }}" class="mt-2 inline-block">
+                        @csrf
+                        @method('DELETE')
+                        <button class="px-3 py-1 rounded border">Un-accept</button>
+                    </form>
+                @endif
+            @endif
+        @endcan
+
+        @if ($contribution->accepted_at)
             <div class="text-sm text-green-700">
                 Accepted {{ $contribution->accepted_at?->diffForHumans() }}
                 @if ($contribution->accepted_by)
@@ -63,17 +97,6 @@
                 @endif
             </div>
         @endif
-  
-        @can('endorse', $contribution)
-            @if (auth()->id() !== $contribution->user_id)
-                <form method="POST" action="{{ route('groups.contributions.endorse.toggle', [$group, $contribution]) }}" class="mt-2 inline-block">
-                    @csrf
-                    <button class="px-3 py-1 rounded border">
-                        {{ $contribution->is_accepted ? 'Un-accept' : 'Mark as Accepted' }}
-                    </button>
-                </form>
-            @endif
-        @endcan
 
         <hr class="my-4">
 
@@ -91,27 +114,27 @@
 
         {{-- List comments --}}
         <div class="space-y-3">
-        @forelse ($contribution->comments()->with('user')->get() as $cm)
-            <div class="p-3 border rounded">
-                <div class="text-sm text-gray-500">
-                    {{ $cm->user->name ?? 'User' }} • {{ $cm->created_at->diffForHumans() }}
+            @foreach ($contribution->comments()->with('user')->latest()->get() as $cm)
+                <div class="p-3 border rounded">
+                    <div class="text-sm text-gray-500">
+                        {{ $cm->user->name ?? 'User' }} • {{ $cm->created_at->diffForHumans() }}
+                    </div>
+                    <div class="mt-1">{!! nl2br(e($cm->body)) !!}</div>
+
+                    @can('delete', $cm)
+                    <form method="POST" action="{{ route('groups.contributions.comments.destroy', [$group, $contribution, $cm]) }}"
+                          onsubmit="return confirm('Delete this comment?');" class="mt-2">
+                        @csrf
+                        @method('DELETE')
+                        <button class="px-2 py-1 rounded bg-red-600 text-white text-xs">Delete</button>
+                    </form>
+                    @endcan
                 </div>
-                <div class="mt-1">{!! nl2br(e($cm->body)) !!}</div>
-
-                @can('delete', $cm)
-                <form method="POST" action="{{ route('groups.contributions.comments.destroy', [$group, $contribution, $cm]) }}"
-                    onsubmit="return confirm('Delete this comment?');" class="mt-2">
-                    @csrf
-                    @method('DELETE')
-                    <button class="px-2 py-1 rounded bg-red-600 text-white text-xs">Delete</button>
-                </form>
-                @endcan
-            </div>
-        @empty
-            <p class="text-gray-500 text-sm">No comments yet.</p>
-        @endforelse
+            @endforeach
+            @if ($contribution->comments()->count() === 0)
+                <p class="text-gray-500 text-sm">No comments yet.</p>
+            @endif
         </div>
-
 
         <div>
             <a class="text-blue-600 underline" href="{{ route('groups.contributions.index', $group) }}">Back to list</a>

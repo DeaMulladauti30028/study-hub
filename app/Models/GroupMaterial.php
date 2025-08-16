@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class GroupMaterial extends Model
 {
+    protected $casts = [
+        'pinned_at' => 'datetime',
+    ];
+    
     protected $fillable = [
         'study_group_id','user_id','title','file_path','file_size','mime_type','original_name'
     ];

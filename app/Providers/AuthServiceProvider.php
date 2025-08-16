@@ -17,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
         GroupMaterial::class => GroupMaterialPolicy::class,
         Assignment::class => AssignmentPolicy::class,
         Contribution::class => ContributionPolicy::class,
+        StudyGroup::class => StudyGroupPolicy::class
     ];
 
     

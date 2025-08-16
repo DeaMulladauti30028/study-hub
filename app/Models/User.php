@@ -48,7 +48,7 @@ class User extends Authenticatable
 
     public function studyGroups()
     {
-    return $this->belongsToMany(StudyGroup::class)->withTimestamps();
+    return $this->belongsToMany(StudyGroup::class)->withPivot('is_moderator')->withTimestamps();
     }
 
     public function assignments()
@@ -70,5 +70,7 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(\App\Models\Contribution::class, 'contribution_helpfuls')->withTimestamps();
     }
+
+    
 
 }

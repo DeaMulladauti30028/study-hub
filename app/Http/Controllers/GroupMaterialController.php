@@ -22,6 +22,8 @@ public function index(Request $request, StudyGroup $group)
     $materials = GroupMaterial::query()
         ->where('study_group_id', $group->id)
         ->searchTitle($q)
+        ->orderByDesc('pinned_at')   // pinned first
+        ->orderByDesc('id')          // then newest
         ->ofBasicType($type)
         ->latest('id')
         ->paginate(15)

@@ -91,24 +91,39 @@ public function leave(StudyGroup $group)
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'course_id'   => ['required', 'exists:courses,id'],
-        'name'        => ['required', 'string', 'max:255'],
-        'description' => ['nullable', 'string'],
-    ]);
+    {
+        $validated = $request->validate([
+            'course_id'   => ['required', 'exists:courses,id'],
+            'name'        => ['required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
 
-    $group = StudyGroup::create([
-        'course_id'   => $validated['course_id'],
-        'name'        => $validated['name'],
-        'description' => $validated['description'] ?? null,
-        'owner_id'    => $request->user()->id,
-    ]);
+        $group = StudyGroup::create([
+            'course_id'   => $validated['course_id'],
+            'name'        => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'owner_id'    => $request->user()->id,
+        ]);
 
-    $group->members()->syncWithoutDetaching([$request->user()->id]);
+        $group->members()->syncWithoutDetaching([$request->user()->id]);
 
-    return redirect()
-        ->route('groups.index')
-        ->with('status', 'Study group created!');
-}
+        return redirect()
+            ->route('groups.index')
+            ->with('status', 'Study group created!');
+    }
+    // app/Http/Controllers/StudyGroupController.php
+
+    public function show(StudyGroup $group)
+    {
+        $group->load([
+            'course',
+            'members' => fn ($q) => $q->select('users.id','users.name')->withPivot('is_moderator'),
+            'nextSession',
+        ]);
+
+        return view('groups.show', compact('group'));
+    }
+
+
+
 }
